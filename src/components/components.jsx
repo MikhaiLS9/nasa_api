@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
-import Button from "./Button";
-import AsteroidImage from "../image/pngegg 1.png";
-import Arrow from "../image/Arrow 1.png";
 import styled from "styled-components";
+import Image from "./Image";
+import Theme from "../styled/Theme";
 export default function Asteroids() {
+  const [count, setCount] = useState(0);
   const [asteroids, setAsteroids] = useState([]);
   const params = {
     api: "LXC0y2pqRm92XBnQk5x2HcqFMr0ahgroh5UkhhsN",
     startDate: "2023-10-10",
     endDate: "2023-10-17",
   };
+  const cartAstreroidText = count === 0 ? 'астеройдов' : 'aстероид'
 
   useEffect(() => {
     const getAsteroids = async () => {
@@ -30,9 +31,7 @@ export default function Asteroids() {
             const asteroidName = asteroid.name.replace(/['(', ')']/g, " ");
             const asteroidId = asteroid.id;
             const hazardousAsteroid =
-              asteroid.is_potentially_hazardous_asteroid === false
-                ? "не опасен"
-                : "Опасен";
+              asteroid.is_potentially_hazardous_asteroid;
             const averageEstimatedDiameterStr =
               (
                 (asteroid.estimated_diameter.kilometers.estimated_diameter_min +
@@ -50,7 +49,6 @@ export default function Asteroids() {
                   .toString()
                   .split(",")[0] + " км"
             );
-            // console.log(asteroid);
             asteroidData.push({
               date: closeApproachData,
               name: asteroidName,
@@ -71,10 +69,32 @@ export default function Asteroids() {
     getAsteroids();
   }, [params.api, params.endDate, params.startDate]);
 
+  const handleButtonClick = (id) => {
+    const updatedAsteroids = asteroids.map((asteroid) => {
+      console.log(asteroid);
+      if (asteroid.id === id) {
+        return {
+          ...asteroid,
+          data: "В КОРЗИНЕ",
+        };
+      } else {
+        return asteroid;
+      }
+    });
+
+    setAsteroids(updatedAsteroids);
+    setCount(count + 1);
+  };
+
   return (
     <div>
       <h2>Ближайшие подлеты астероидов</h2>
       <p>в километрах</p>
+      <StyledCart>
+        <StyledHeader>Корзина</StyledHeader>
+        <StyledText>{count} {cartAstreroidText} </StyledText>
+        <StyledButton>Отправить</StyledButton>
+      </StyledCart>
 
       <Block>
         {asteroids.map((asteroid) => (
@@ -83,17 +103,23 @@ export default function Asteroids() {
             <StyledBlockAsteroid>
               <div>
                 <StyledDistance>{asteroid.distance}</StyledDistance>
-                <ArrowImg src={Arrow} alt="" />
+                <ArrowImg src={Image.arrow} alt="arrow" />
               </div>
-              <AsteroidImg src={AsteroidImage} alt="" />
+              <AsteroidImg src={Image.asteroid} alt="asteroid" />
               <div>
                 <h3>{asteroid.name}</h3>
                 <p>{asteroid.diameter}</p>
               </div>
             </StyledBlockAsteroid>
             <StyledSpanButton>
-              <Button />
-              <p>{asteroid.dangerous}</p>
+              <StyledButton1 onClick={() => handleButtonClick(asteroid.id)}>
+                {asteroid.data || "ЗАКАЗАТЬ"}
+              </StyledButton1>
+              <p>
+                {asteroid.dangerous === false ? null : (
+                  <img src={Image.hazardat} alt="" />
+                )}
+              </p>
             </StyledSpanButton>
           </div>
         ))}
@@ -126,4 +152,66 @@ const StyledSpanButton = styled.span`
   display: flex;
   align-items: center;
   gap: 30px;
+`;
+
+const StyledButton1 = styled.button`
+  display: flex;
+  padding: 2px 11px;
+  align-items: center;
+  gap: 2px;
+  border-radius: 16px;
+  background-color: ${Theme.color.accent};
+
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 20px;
+  letter-spacing: 1px;
+`;
+
+const StyledCart = styled.div`
+  display: flex;
+  max-width: 250px;
+  width: 100%;
+  height: 300px;
+  padding: 16px;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+  row-gap: 32px;
+  flex-wrap: wrap;
+  flex-direction: column;
+
+  position: fixed;
+  right: 10px;
+  top: 10px;
+`;
+
+const StyledHeader = styled.h2`
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 24px;
+`;
+
+const StyledText = styled.p`
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+`;
+const StyledButton = styled.button`
+  display: flex;
+  height: 48px;
+  width: 40%;
+  padding: 8px 16px;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  background-color: ${Theme.color.secondaru};
+  color: ${Theme.color.fonst};
+  border-radius: 24px;
+
+  font-family: Helvetica;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 24px;
 `;
